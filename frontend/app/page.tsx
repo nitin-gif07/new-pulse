@@ -13,11 +13,17 @@ import {
 
 export default function Home() {
   const [clusters, setClusters] = useState<any[]>([]);
+  const [darkMode, setDarkMode] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+const [selectedCluster, setSelectedCluster] = useState<any>(null);
 
   const loadClusters = () => {
     fetch("http://localhost:5000/clusters")
       .then((res) => res.json())
-      .then((data) => setClusters(data))
+      .then((data) => {
+        console.log("Refresh button clicked");
+        setClusters(data);
+      })
       .catch((err) => console.error(err));
   };
 
@@ -30,7 +36,10 @@ export default function Home() {
     articles: cluster.articleCount,
   }));
 
-  const totalArticles = clusters.reduce(
+  const filteredClusters = clusters.filter((cluster) =>
+  cluster.label.toLowerCase().includes(searchTerm.toLowerCase())
+);
+const totalArticles = filteredClusters.reduce(
     (sum, cluster) => sum + cluster.articleCount,
     0
   );
@@ -39,7 +48,8 @@ export default function Home() {
     <div
       style={{
         minHeight: "100vh",
-        background: "#f3f6fb",
+        background: darkMode ? "#0f172a" : "#f3f6fb",
+color: darkMode ? "white" : "black",
         padding: "30px",
         fontFamily: "Arial, sans-serif",
       }}
@@ -74,6 +84,22 @@ export default function Home() {
         >
           Real-time News Cluster Monitoring
         </p>
+        <button
+  onClick={() => setDarkMode(!darkMode)}
+  style={{
+    marginTop: "15px",
+    marginRight: "10px",
+    padding: "10px 18px",
+    border: "none",
+    borderRadius: "8px",
+    background: darkMode ? "#334155" : "#ffffff",
+    color: darkMode ? "#ffffff" : "#111827",
+    cursor: "pointer",
+    fontWeight: "bold",
+  }}
+>
+  {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
+</button>
 
         <button
           onClick={loadClusters}
@@ -89,6 +115,22 @@ export default function Home() {
         >
           🔄 Refresh Data
         </button>
+        <div style={{ marginTop: "20px" }}>
+  <input
+    type="text"
+    placeholder="🔍 Search clusters..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    style={{
+      padding: "12px",
+      width: "100%",
+      maxWidth: "400px",
+      borderRadius: "10px",
+      border: "none",
+      fontSize: "16px",
+    }}
+  />
+</div>
       </div>
 
       {/* Stats */}
@@ -102,7 +144,8 @@ export default function Home() {
       >
         <div
           style={{
-            background: "white",
+           background: darkMode ? "#1e293b" : "white",
+color: darkMode ? "white" : "black",
             padding: "20px",
             borderRadius: "15px",
             flex: 1,
@@ -116,7 +159,8 @@ export default function Home() {
 
         <div
           style={{
-            background: "white",
+            background: darkMode ? "#1e293b" : "white",
+color: darkMode ? "white" : "black",
             padding: "20px",
             borderRadius: "15px",
             flex: 1,
@@ -132,7 +176,8 @@ export default function Home() {
       {/* Timeline */}
       <div
         style={{
-          background: "white",
+          background: darkMode ? "#1e293b" : "white",
+color: darkMode ? "#ffffff" : "#111827",
           padding: "20px",
           borderRadius: "15px",
           marginBottom: "25px",
@@ -166,14 +211,17 @@ export default function Home() {
           gap: "20px",
         }}
       >
-        {clusters.map((cluster) => (
+        {filteredClusters.map((cluster) => (
           <div
-            key={cluster.id}
+  key={cluster.id}
+  onClick={() => setSelectedCluster(cluster)}
             style={{
               background: "white",
               borderRadius: "15px",
               padding: "20px",
               boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+              cursor: "pointer",
+transition: "0.3s",
             }}
           >
             <h2
